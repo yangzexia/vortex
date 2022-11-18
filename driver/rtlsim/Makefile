@@ -14,6 +14,8 @@ CXXFLAGS += $(CONFIGS)
 CXXFLAGS += -DDUMP_PERF_STATS
 
 LDFLAGS += -shared -pthread
+# 将目录 . 加入到搜索库文件的目录
+# 在库文件搜索路径中寻找 librtlsim.so 动态库文件
 LDFLAGS += -L. -lrtlsim
 
 SRCS = vortex.cpp ../common/vx_utils.cpp

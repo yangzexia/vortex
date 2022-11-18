@@ -1,3 +1,19 @@
+/**
+ * @file processor.cpp
+ * @brief 这个文件实现了GPGPU设备的具体行为类：vortex::processor::Impl
+ * 设备的行为是时序级别的，外部ram的时序通过ramulator来实现
+ * @author wangh (wanghuan3037@fiberhome.com)
+ * @version 1.0
+ * @date 2022-11-16
+ * 
+ * @copyright Copyright (c) 2022  XX通信公司
+ * 
+ * @par 修改日志:
+ * <table>
+ * <tr><th>Date       <th>Version <th>Author  <th>Description
+ * <tr><td>2022-11-16 <td>1.0     <td>wangh     <td>内容
+ * </table>
+ */
 #include "processor.h"
 
 #include <verilated.h>
@@ -72,14 +88,21 @@ double sc_time_stamp() {
 static bool trace_enabled = false;
 static uint64_t trace_start_time = TRACE_START_TIME;
 static uint64_t trace_stop_time = TRACE_STOP_TIME;
-
+/**
+ * @brief  如果时间戳在设定的仿真跟踪区间内，则返回true
+ * @return true 
+ * @return false 
+ */
 bool sim_trace_enabled() {
   if (timestamp >= trace_start_time 
    && timestamp < trace_stop_time)
     return true;
   return trace_enabled;
 }
-
+/**
+ * @brief 返回是否追踪仿真
+ * @param  enable            
+ */
 void sim_trace_enable(bool enable) {
   trace_enabled = enable;
 }
@@ -96,7 +119,7 @@ public:
     // turn off assertion before reset
     Verilated::assertOn(false);
 
-    // create RTL module instance
+    ///@note create RTL module instance
   #ifdef AXI_BUS
     device_ = new VVortex_axi();
   #else
@@ -127,7 +150,9 @@ public:
     // reset the device
     this->reset();
   }
-
+/**
+ * @brief Destroy the Impl object，清空print_bufs_
+ */
   ~Impl() {
     this->cout_flush();
 
@@ -144,8 +169,22 @@ public:
       delete dram_;
     }
   }
-
+/**
+ * @brief 刷新输出
+ * @note print_bufs_为一个容器，&buf可以遍历print_bufs_中的每一个值，并且由于加了引用，可以对容器进行内容填充
+ * @code 
+    for (auto& buf : print_bufs_) {
+      auto str = buf.second.str();
+      if (!str.empty()) {
+        std::cout << "#" << buf.first << ": " << str << std::endl;
+      }
+    }
+ * @endcode
+ * @note buf.second.str()返回第二个值并将该字符串的值置为当前流中的值
+ * 
+ */
   void cout_flush() {
+    
     for (auto& buf : print_bufs_) {
       auto str = buf.second.str();
       if (!str.empty()) {
@@ -215,7 +254,10 @@ private:
 
     this->cout_flush();
   }
-
+/**
+ * @brief 执行一个时钟周期
+ * 每个时钟周期要做的事：clk为0时eval一次设备，通过总线访问一次memory，访问一次dram
+ */
   void tick() {
 
     device_->clk = 0;
@@ -432,7 +474,11 @@ private:
     device_->mem_req_ready = 0;
     device_->mem_rsp_valid = 0;
   }
-
+/**
+ * @brief 每个时钟的上升沿对总线进行操作
+ * @param  clk  时钟，上升沿有效
+ * @note clk下降沿更新读取memmory的ready信号
+ */
   void eval_avs_bus(bool clk) {
     if (!clk) {
       mem_rd_rsp_ready_ = device_->mem_rsp_ready;
@@ -584,11 +630,11 @@ private:
 #ifdef VCD_OUTPUT
   VerilatedVcdC *trace_;
 #endif
+  
+  std::unordered_map<int, std::stringstream> print_bufs_;///< 键值唯一的字典，<int : std::stringstream(能够流式读取的字符串对象)>，该成员变量用于打印，以及刷新输出（可能是用来调试的输出？）
 
-  std::unordered_map<int, std::stringstream> print_bufs_;
-
-  std::list<mem_req_t*> pending_mem_reqs_;
-
+  std::list<mem_req_t*> pending_mem_reqs_;///< RAM类的访问请求队列，物理实体是什么？
+  
   bool mem_rd_rsp_active_;
   bool mem_rd_rsp_ready_;
 

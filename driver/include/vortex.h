@@ -25,54 +25,55 @@ typedef void* vx_buffer_h;
 
 #define MAX_TIMEOUT               (60*60*1000)   // 1hr 
 
-// open the device and connect to it
+/// open the device and connect to it
 int vx_dev_open(vx_device_h* hdevice);
 
-// Close the device when all the operations are done
+/// Close the device when all the operations are done
 int vx_dev_close(vx_device_h hdevice);
 
-// return device configurations
+/// return device configurations
 int vx_dev_caps(vx_device_h hdevice, uint32_t caps_id, uint64_t *value);
 
-// Allocate shared buffer with device
+/// Allocate shared buffer with device
 int vx_buf_alloc(vx_device_h hdevice, uint64_t size, vx_buffer_h* hbuffer);
 
-// release buffer
+/// release buffer
 int vx_buf_free(vx_buffer_h hbuffer);
 
-// Get host pointer address  
+/// Get host pointer address  
 void* vx_host_ptr(vx_buffer_h hbuffer);
 
-// allocate device memory and return address
+/// allocate device memory and return address
 int vx_mem_alloc(vx_device_h hdevice, uint64_t size, uint64_t* dev_maddr);
 
-// release device memory
+/// release device memory
 int vx_mem_free(vx_device_h hdevice, uint64_t dev_maddr);
 
-// Copy bytes from buffer to device local memory
+/// Copy bytes from buffer to device local memory
 int vx_copy_to_dev(vx_buffer_h hbuffer, uint64_t dev_maddr, uint64_t size, uint64_t src_offset);
 
-// Copy bytes from device local memory to buffer
+/// Copy bytes from device local memory to buffer
 int vx_copy_from_dev(vx_buffer_h hbuffer, uint64_t dev_maddr, uint64_t size, uint64_t dst_offset);
 
-// Start device execution
+/// Start device execution
 int vx_start(vx_device_h hdevice);
 
-// Wait for device ready with milliseconds timeout
+/// Wait for device ready with milliseconds timeout
 int vx_ready_wait(vx_device_h hdevice, uint64_t timeout);
 
 ////////////////////////////// UTILITY FUNCIONS ///////////////////////////////
 
-// upload kernel bytes to device
+/// upload kernel bytes to device
 int vx_upload_kernel_bytes(vx_device_h device, const void* content, uint64_t size);
 
-// upload kernel file to device
+/// upload kernel file to device
 int vx_upload_kernel_file(vx_device_h device, const char* filename);
 
-// dump performance counters
+/// dump performance counters
 int vx_dump_perf(vx_device_h device, FILE* stream);
 
 //////////////////////////// DEPRECATED FUNCTIONS /////////////////////////////
+/// DEPRECATED FUNCTIONS
 int vx_alloc_dev_mem(vx_device_h hdevice, uint64_t size, uint64_t* dev_maddr);
 int vx_alloc_shared_mem(vx_device_h hdevice, uint64_t size, vx_buffer_h* hbuffer);
 int vx_buf_release(vx_buffer_h hbuffer);

@@ -179,7 +179,9 @@ RAM::RAM(uint32_t page_size)
 RAM::~RAM() {
   this->clear();
 }
-
+/**
+ * @brief 删除所有页表项（分配给GPGPU的内存空间）
+ */
 void RAM::clear() {
   for (auto& page : pages_) {
     delete[] page.second;
@@ -189,7 +191,9 @@ void RAM::clear() {
 uint64_t RAM::size() const {
   return uint64_t(pages_.size()) << page_bits_;
 }
-
+/// @brief 返回该地址在虚拟内存中的页表项
+/// @param address 输入地址
+/// @return 输入地址在GPGPU中对应的虚拟内存的页表的表项
 uint8_t *RAM::get(uint64_t address) const {
   uint32_t page_size   = 1 << page_bits_;  
   uint32_t page_offset = address & (page_size - 1);
@@ -217,14 +221,25 @@ uint8_t *RAM::get(uint64_t address) const {
 
   return page + page_offset;
 }
-
+/**
+ * @brief 读取GPGPU中该地址的数据，保存在data对应的地址中
+ * @param  data  读出数据要保存的地址
+ * @param  addr  要读取的地址
+ * @param  size  要读取的大小
+ * @note 在读取之前要通过get(addr)做地址转换
+ */
 void RAM::read(void *data, uint64_t addr, uint64_t size) {
   uint8_t* d = (uint8_t*)data;
   for (uint64_t i = 0; i < size; i++) {
     d[i] = *this->get(addr + i);
   }
 }
-
+/**
+ * @brief 往对应地址中写入大小为size的内容为data的数据
+ * @param [in] data  要写入的数据
+ * @param [in] addr  要写入的起始地址
+ * @param [in] size  要写入的大小
+ */
 void RAM::write(const void *data, uint64_t addr, uint64_t size) {
   const uint8_t* d = (const uint8_t*)data;
   for (uint64_t i = 0; i < size; i++) {

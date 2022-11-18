@@ -5,9 +5,9 @@
 
 namespace vortex {
 
-class MemoryAllocator {
+class MemoryAllocator {//页表管理
 public:
-    MemoryAllocator(
+    MemoryAllocator(//每个页表项包含起始地址和结束地址,对齐参数,pages_是一系列指针
         uint64_t minAddress,
         uint64_t maxAddress,
         uint32_t pageAlign, 
@@ -34,7 +34,7 @@ public:
             return -1;
 
         // Align allocation size
-        size = AlignSize(size, blockAlign_);
+        size = AlignSize(size, blockAlign_); //该函数返回blockAlign_的整数倍大小
 
         // Walk thru all pages to find a free block
         block_t* freeBlock = nullptr;
@@ -185,7 +185,9 @@ public:
     }
 
 private:
-
+    /**
+     * @brief 页表项指向的内存块，按双向list组织，每个块保存该块的地址和大小
+     */
     struct block_t {
         block_t* nextFreeS;
         block_t* prevFreeS;
@@ -210,7 +212,9 @@ private:
             , size(size)
         {}
     };
-
+    /**
+     * @brief 页表，按双向list组织，list的每一项指向每个内存块
+     */
     struct page_t {
         page_t*  next;        
         
@@ -390,7 +394,19 @@ private:
         } 
         return nullptr;
     }
-
+/**
+ * @brief  分配内存时对齐地址空间，每个内存块的大小为alignment
+ * @param  size 要分配的大小
+ * @param  alignment    块大小 
+ * @return 实际分配的大小
+ * 
+ * @code
+ * AlignSize(65, 64) = 128
+ * AlignSize(63, 64) = 64
+ * AlignSize(127, 64) = 128
+ * @endcode
+ * 
+ */
     static uint64_t AlignSize(uint64_t size, uint64_t alignment) {
         assert(0 == (alignment & (alignment - 1)));
         return (size + alignment - 1) & ~(alignment - 1);

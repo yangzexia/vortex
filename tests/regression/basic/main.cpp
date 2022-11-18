@@ -239,6 +239,7 @@ int main(int argc, char *argv[]) {
   std::cout << "buffer size: " << buf_size << " bytes" << std::endl;
 
   // allocate device memory
+  /// @note deive的内存空间，函数内部调用了成员的函数mem_allocator_::allocate()
   RT_CHECK(vx_mem_alloc(device, buf_size, &value));
   kernel_arg.src_addr = value;
   RT_CHECK(vx_mem_alloc(device, buf_size, &value));
@@ -249,7 +250,8 @@ int main(int argc, char *argv[]) {
   std::cout << "dev_src=" << std::hex << kernel_arg.src_addr << std::endl;
   std::cout << "dev_dst=" << std::hex << kernel_arg.dst_addr << std::endl;
 
-  // allocate shared memory  
+  // allocate shared memory
+
   std::cout << "allocate shared memory" << std::endl;
   uint32_t alloc_size = std::max<uint32_t>(buf_size, sizeof(kernel_arg_t));
   RT_CHECK(vx_buf_alloc(device, alloc_size, &staging_buf));
@@ -262,10 +264,12 @@ int main(int argc, char *argv[]) {
 
   if (1 == test || -1 == test) {
     // upload program
+    /// @note 写到了vx_device的成员ram_里
     std::cout << "upload program" << std::endl;  
     RT_CHECK(vx_upload_kernel_file(device, kernel_file));
 
     // upload kernel argument
+    /// @note 指定一块上下文的内存空间，地址指针为结构体staging_buf，其中包括了结果要保存的内存地址，GPU的运行结果会保存在这个指针指向的地址，然后copy回主机的内存中
     std::cout << "upload kernel argument" << std::endl;
     {
       auto buf_ptr = (void*)vx_host_ptr(staging_buf);
